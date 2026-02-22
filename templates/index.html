@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Gestión Académica UF{% endblock %}
+
+{% block content %}
+<div class="p-5 mb-4 bg-white border rounded-3 shadow">
+    <h1 class="display-5 fw-bold text-primary">Sistema de Gestión Académica</h1>
+    <p class="col-md-10 fs-4 mt-3">Plataforma central para la administración de admisiones de posgrados y asistencia al estudiante.</p>
+    <hr class="my-4">
+    <p class="text-muted">Utilice las rutas del sistema para gestionar expedientes y solicitudes.</p>
+    <a href="{{ url_for('perfil_estudiante', nombre='Victor') }}" class="btn btn-primary btn-lg mt-2">Ver Expediente de Prueba</a>
+</div>
+{% endblock %}

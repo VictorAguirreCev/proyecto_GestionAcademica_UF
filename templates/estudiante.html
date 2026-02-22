@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Expediente - {{ nombre }}{% endblock %}
+
+{% block content %}
+<div class="card shadow border-0">
+    <div class="card-header bg-info text-white">
+        <h4 class="mb-0">Expediente Académico</h4>
+    </div>
+    <div class="card-body p-4">
+        <h5 class="card-title display-6">Estudiante: {{ nombre }}</h5>
+        <p class="card-text fs-5 mt-3">El expediente y los trámites de <strong>bienestar estudiantil</strong> de este perfil se encuentran en revisión.</p>
+        <a href="{{ url_for('tramites') }}" class="btn btn-outline-secondary mt-3">Ir a Trámites</a>
+    </div>
+</div>
+{% endblock %}
