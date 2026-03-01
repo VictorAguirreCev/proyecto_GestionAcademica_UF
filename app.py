@@ -3,96 +3,91 @@ import sqlite3
 
 app = Flask(__name__)
 
-# --- PROGRAMACIÓN ORIENTADA A OBJETOS (POO) ---
-
-# Clase para el objeto individual (Producto/Trámite)
+# ==========================================
+# 1. CLASES (POO)
+# ==========================================
 class Tramite:
-    def __init__(self, id, estudiante, tipo, costo):
-        self.id = id
+    def __init__(self, id_tramite, estudiante, tipo, costo):
+        self.id = id_tramite
         self.estudiante = estudiante
         self.tipo = tipo
         self.costo = costo
 
-# Clase para el Inventario y Base de Datos
-class GestionInventario:
-    def __init__(self):
-        # COLECCIÓN: Diccionario para manejar datos en memoria
-        self.mis_datos = {}
+class InventarioTramites:
+    def __init__(self, nombre_db='universidad.db'):
+        self.nombre_db = nombre_db
         self.crear_tabla()
 
     def conectar(self):
-        return sqlite3.connect("inventario.db")
+        return sqlite3.connect(self.nombre_db)
 
     def crear_tabla(self):
         conexion = self.conectar()
-        cursor = conexion.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS registros 
-                          (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                           estudiante TEXT, tipo TEXT, costo REAL)''')
+        conexion.execute('''CREATE TABLE IF NOT EXISTS tramites 
+                           (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                            estudiante TEXT, tipo TEXT, costo REAL)''')
         conexion.commit()
         conexion.close()
 
-    def agregar(self, e, t, c):
+    def agregar(self, estudiante, tipo, costo):
         conexion = self.conectar()
-        cursor = conexion.cursor()
-        cursor.execute("INSERT INTO registros (estudiante, tipo, costo) VALUES (?, ?, ?)", (e, t, c))
+        conexion.execute("INSERT INTO tramites (estudiante, tipo, costo) VALUES (?, ?, ?)", 
+                         (estudiante, tipo, costo))
         conexion.commit()
         conexion.close()
 
-    def listar(self):
+    def listar_todos(self):
         conexion = self.conectar()
         conexion.row_factory = sqlite3.Row
-        cursor = conexion.cursor()
-        cursor.execute("SELECT * FROM registros")
-        filas = cursor.fetchall()
+        filas = conexion.execute("SELECT * FROM tramites").fetchall()
         conexion.close()
         
-        # Llenamos el diccionario (Colección)
-        self.mis_datos.clear()
-        for f in filas:
-            nuevo = Tramite(f['id'], f['estudiante'], f['tipo'], f['costo'])
-            self.mis_datos[f['id']] = nuevo
-        return self.mis_datos
+        # COLECCIÓN: Diccionario para almacenar los objetos
+        diccionario_tramites = {}
+        for fila in filas:
+            diccionario_tramites[fila['id']] = Tramite(fila['id'], fila['estudiante'], fila['tipo'], fila['costo'])
+        return diccionario_tramites
 
-    def borrar(self, id_borrar):
+    def eliminar(self, id_borrar):
         conexion = self.conectar()
-        cursor = conexion.cursor()
-        cursor.execute("DELETE FROM registros WHERE id = ?", (id_borrar,))
+        conexion.execute("DELETE FROM tramites WHERE id = ?", (id_borrar,))
         conexion.commit()
         conexion.close()
 
-# Instancia manual del gestor
-inventario = GestionInventario()
+# Instancia global
+gestor = InventarioTramites()
 
-# --- RUTAS DE LA APLICACIÓN ---
-
+# ==========================================
+# 2. RUTAS WEB
+# ==========================================
 @app.route('/')
 def inicio():
     return render_template('index.html')
 
 @app.route('/about')
-def acerca():
+def acerca_de():
     return render_template('about.html')
 
 @app.route('/gestion')
-def pantalla_gestion():
-    # COLECCIÓN: Tupla para opciones fijas
-    opciones = ("Admisión", "Certificado", "Titulación", "Matrícula")
-    datos = inventario.listar()
-    return render_template('gestion_tramites.html', lista=datos.values(), tipos=opciones)
+def gestion():
+    # COLECCIÓN: Tupla con los tipos de trámites válidos
+    tipos_validos = ("Admisión", "Certificado", "Titulación", "Matrícula")
+    datos = gestor.listar_todos()
+    return render_template('gestion_tramites.html', tramites=datos.values(), tipos=tipos_validos)
 
-@app.route('/enviar_datos', methods=['POST'])
-def enviar_datos():
+@app.route('/guardar', methods=['POST'])
+def guardar():
     est = request.form['estudiante']
     tip = request.form['tipo']
     cos = request.form['costo']
-    inventario.agregar(est, tip, cos)
+    gestor.agregar(est, tip, cos)
     return redirect('/gestion')
 
-@app.route('/quitar/<int:id_reg>')
-def quitar(id_reg):
-    inventario.borrar(id_reg)
+@app.route('/borrar/<int:id_tramite>')
+def borrar(id_tramite):
+    gestor.eliminar(id_tramite)
     return redirect('/gestion')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # El host='0.0.0.0' ayuda a evitar problemas de puertos en algunos entornos
+    app.run(host='0.0.0.0', port=5000, debug=True)

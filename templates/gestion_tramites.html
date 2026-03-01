@@ -1,29 +1,71 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="row">
-    <div class="col-md-4">
-        <form action="/enviar_datos" method="POST" class="card p-3 shadow-sm">
-            <h5>Nuevo Registro</h5>
-            <input type="text" name="estudiante" placeholder="Estudiante" class="form-control mb-2" required>
-            <select name="tipo" class="form-select mb-2">
-                {% for o in tipos %}<option value="{{o}}">{{o}}</option>{% endfor %}
-            </select>
-            <input type="number" step="0.01" name="costo" placeholder="Costo" class="form-control mb-2" required>
-            <button class="btn btn-success w-100">Guardar</button>
-        </form>
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Registrar Trámite</h5>
+            </div>
+            <div class="card-body">
+                <form action="/guardar" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Estudiante:</label>
+                        <input type="text" name="estudiante" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo:</label>
+                        <select name="tipo" class="form-select" required>
+                            {% for tipo in tipos %}
+                                <option value="{{ tipo }}">{{ tipo }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Costo ($):</label>
+                        <input type="number" step="0.01" name="costo" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Guardar</button>
+                </form>
+            </div>
+        </div>
     </div>
+
     <div class="col-md-8">
-        <table class="table table-bordered bg-white shadow-sm">
-            <thead><tr><th>ID</th><th>Estudiante</th><th>Tipo</th><th>Costo</th><th>Acción</th></tr></thead>
-            <tbody>
-                {% for r in lista %}
-                <tr>
-                    <td>{{r.id}}</td><td>{{r.estudiante}}</td><td>{{r.tipo}}</td><td>${{r.costo}}</td>
-                    <td><a href="/quitar/{{r.id}}" class="btn btn-danger btn-sm">Borrar</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Inventario de Trámites</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Estudiante</th>
+                            <th>Tipo</th>
+                            <th>Costo</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in tramites %}
+                        <tr>
+                            <td>{{ t.id }}</td>
+                            <td>{{ t.estudiante }}</td>
+                            <td>{{ t.tipo }}</td>
+                            <td>${{ t.costo }}</td>
+                            <td>
+                                <a href="/borrar/{{ t.id }}" class="btn btn-danger btn-sm">Eliminar</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No hay trámites registrados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
