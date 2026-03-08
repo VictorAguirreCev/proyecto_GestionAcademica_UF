@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-2">Auditoría de Respaldos del Sistema</h3>
+<p class="text-muted mb-4">Vista de control interno: copias de seguridad generadas automáticamente por el sistema.</p>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-dark text-white">Reporte de Texto (TXT)</div>
+            <ul class="list-group list-group-flush">
+                {% for linea in txt %}<li class="list-group-item">{{ linea }}</li>{% else %}<li class="list-group-item">Sin registros de respaldo.</li>{% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">Datos Estructurados (JSON)</div>
+            <ul class="list-group list-group-flush">
+                {% for item in json %}<li class="list-group-item">{{ item.estudiante }} - {{ item.tipo }} (${{ item.costo }})</li>{% else %}<li class="list-group-item">Sin registros de respaldo.</li>{% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">Hoja de Cálculo (CSV)</div>
+            <ul class="list-group list-group-flush">
+                {% for fila in csv %}<li class="list-group-item">{{ fila[0] }} | {{ fila[1] }} | {{ fila[2] }}</li>{% else %}<li class="list-group-item">Sin registros de respaldo.</li>{% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

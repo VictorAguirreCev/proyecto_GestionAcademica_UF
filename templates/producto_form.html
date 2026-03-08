@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm border-0 w-50 mx-auto">
+    <div class="card-header bg-primary text-white"><h5>Formulario de Registro de Trámite</h5></div>
+    <div class="card-body">
+        <form action="/guardar" method="POST">
+            <label>Nombre Completo del Estudiante:</label>
+            <input type="text" name="estudiante" class="form-control mb-2" required>
+            
+            <label>Categoría del Trámite:</label>
+            <select name="tipo" class="form-select mb-2" required>
+                {% for tipo in tipos %}<option value="{{ tipo }}">{{ tipo }}</option>{% endfor %}
+            </select>
+            
+            <label>Costo del Trámite ($):</label>
+            <input type="number" step="0.01" name="costo" class="form-control mb-3" required>
+            
+            <button type="submit" class="btn btn-success w-100">Procesar y Archivar Trámite</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

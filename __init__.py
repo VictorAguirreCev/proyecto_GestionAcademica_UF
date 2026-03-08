@@ -1,0 +1,1 @@
+# Inicializador de la raíz del proyecto

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-3">Directorio de Trámites Activos</h3>
+<table class="table table-bordered bg-white shadow-sm">
+    <thead class="table-dark">
+        <tr><th>ID de Expediente</th><th>Nombre del Estudiante</th><th>Tipo de Trámite</th><th>Costo Administrativo</th></tr>
+    </thead>
+    <tbody>
+        {% for t in tramites %}
+        <tr><td>#00{{ t.id }}</td><td>{{ t.estudiante }}</td><td>{{ t.tipo }}</td><td>${{ t.costo }}</td></tr>
+        {% else %}
+        <tr><td colspan="4" class="text-center">No hay expedientes registrados actualmente en el sistema.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

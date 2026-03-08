@@ -1,93 +1,59 @@
 from flask import Flask, render_template, request, redirect
-import sqlite3
+import os
+
+from form import ValidadorFormulario
+from inventario.bd import db
+from inventario.productos import Tramite
+from inventario.inventario import guardar_en_archivos, leer_archivos
 
 app = Flask(__name__)
 
-# ==========================================
-# 1. CLASES (POO)
-# ==========================================
-class Tramite:
-    def __init__(self, id_tramite, estudiante, tipo, costo):
-        self.id = id_tramite
-        self.estudiante = estudiante
-        self.tipo = tipo
-        self.costo = costo
+CARPETA_RAIZ = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(CARPETA_RAIZ, 'universidad.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-class InventarioTramites:
-    def __init__(self, nombre_db='universidad.db'):
-        self.nombre_db = nombre_db
-        self.crear_tabla()
+db.init_app(app)
 
-    def conectar(self):
-        return sqlite3.connect(self.nombre_db)
+with app.app_context():
+    db.create_all()
 
-    def crear_tabla(self):
-        conexion = self.conectar()
-        conexion.execute('''CREATE TABLE IF NOT EXISTS tramites 
-                           (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                            estudiante TEXT, tipo TEXT, costo REAL)''')
-        conexion.commit()
-        conexion.close()
-
-    def agregar(self, estudiante, tipo, costo):
-        conexion = self.conectar()
-        conexion.execute("INSERT INTO tramites (estudiante, tipo, costo) VALUES (?, ?, ?)", 
-                         (estudiante, tipo, costo))
-        conexion.commit()
-        conexion.close()
-
-    def listar_todos(self):
-        conexion = self.conectar()
-        conexion.row_factory = sqlite3.Row
-        filas = conexion.execute("SELECT * FROM tramites").fetchall()
-        conexion.close()
-        
-        # COLECCIÓN: Diccionario para almacenar los objetos
-        diccionario_tramites = {}
-        for fila in filas:
-            diccionario_tramites[fila['id']] = Tramite(fila['id'], fila['estudiante'], fila['tipo'], fila['costo'])
-        return diccionario_tramites
-
-    def eliminar(self, id_borrar):
-        conexion = self.conectar()
-        conexion.execute("DELETE FROM tramites WHERE id = ?", (id_borrar,))
-        conexion.commit()
-        conexion.close()
-
-# Instancia global
-gestor = InventarioTramites()
-
-# ==========================================
-# 2. RUTAS WEB
-# ==========================================
 @app.route('/')
 def inicio():
     return render_template('index.html')
 
-@app.route('/about')
-def acerca_de():
-    return render_template('about.html')
+@app.route('/contactos')
+def contactos():
+    return render_template('contactos.html')
 
-@app.route('/gestion')
-def gestion():
-    # COLECCIÓN: Tupla con los tipos de trámites válidos
-    tipos_validos = ("Admisión", "Certificado", "Titulación", "Matrícula")
-    datos = gestor.listar_todos()
-    return render_template('gestion_tramites.html', tramites=datos.values(), tipos=tipos_validos)
+@app.route('/productos')
+def productos():
+    lista = Tramite.query.all()
+    return render_template('productos.html', tramites=lista)
+
+@app.route('/producto_form')
+def producto_form():
+    tipos = ("Admisión", "Certificado", "Titulación", "Matrícula")
+    return render_template('producto_form.html', tipos=tipos)
 
 @app.route('/guardar', methods=['POST'])
 def guardar():
-    est = request.form['estudiante']
-    tip = request.form['tipo']
-    cos = request.form['costo']
-    gestor.agregar(est, tip, cos)
-    return redirect('/gestion')
+    estudiante = request.form['estudiante']
+    tipo = request.form['tipo']
+    costo = request.form['costo']
 
-@app.route('/borrar/<int:id_tramite>')
-def borrar(id_tramite):
-    gestor.eliminar(id_tramite)
-    return redirect('/gestion')
+    if ValidadorFormulario.validar_tramite(estudiante, tipo, costo):
+        nuevo_registro = Tramite(estudiante, tipo, float(costo))
+        db.session.add(nuevo_registro)
+        db.session.commit()
+
+        guardar_en_archivos(estudiante, tipo, float(costo))
+
+    return redirect('/productos')
+
+@app.route('/datos')
+def datos():
+    txt, json_data, csv_data = leer_archivos()
+    return render_template('datos.html', txt=txt, json=json_data, csv=csv_data)
 
 if __name__ == '__main__':
-    # El host='0.0.0.0' ayuda a evitar problemas de puertos en algunos entornos
     app.run(host='0.0.0.0', port=5000, debug=True)

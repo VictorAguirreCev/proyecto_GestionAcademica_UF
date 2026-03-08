@@ -9,3 +9,8 @@ __pycache__/
 
 # Variables de entorno (seguridad)
 .env
+
+venv/
+__pycache__/
+instance/
+universidad.db
