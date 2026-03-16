@@ -1,15 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
-<h3 class="mb-3">Directorio de Trámites Activos</h3>
+<h3 class="mb-3">Directorio de Trámites Activos (MySQL)</h3>
 <table class="table table-bordered bg-white shadow-sm">
     <thead class="table-dark">
-        <tr><th>ID de Expediente</th><th>Nombre del Estudiante</th><th>Tipo de Trámite</th><th>Costo Administrativo</th></tr>
+        <tr><th>ID Expediente</th><th>Acciones de Modificación y Eliminación</th></tr>
     </thead>
     <tbody>
         {% for t in tramites %}
-        <tr><td>#00{{ t.id }}</td><td>{{ t.estudiante }}</td><td>{{ t.tipo }}</td><td>${{ t.costo }}</td></tr>
+        <tr>
+            <td class="align-middle fw-bold">#00{{ t.id }}</td>
+            <td>
+                <form action="/modificar_tramite" method="POST" class="d-inline">
+                    <input type="hidden" name="id" value="{{ t.id }}">
+                    <input type="text" name="estudiante" value="{{ t.estudiante }}" class="form-control form-control-sm d-inline w-auto" required>
+                    <select name="tipo" class="form-select form-select-sm d-inline w-auto" required>
+                        <option value="{{ t.tipo }}">{{ t.tipo }}</option>
+                        <option value="Admisión">Admisión</option>
+                        <option value="Certificado">Certificado</option>
+                        <option value="Titulación">Titulación</option>
+                        <option value="Matrícula">Matrícula</option>
+                    </select>
+                    <input type="number" step="0.01" name="costo" value="{{ t.costo }}" class="form-control form-control-sm d-inline w-auto" required>
+                    <button type="submit" class="btn btn-warning btn-sm">Actualizar</button>
+                </form>
+                <a href="/eliminar_tramite/{{ t.id }}" class="btn btn-danger btn-sm">Baja</a>
+            </td>
+        </tr>
         {% else %}
-        <tr><td colspan="4" class="text-center">No hay expedientes registrados actualmente en el sistema.</td></tr>
+        <tr><td colspan="2" class="text-center">No hay expedientes en MySQL.</td></tr>
         {% endfor %}
     </tbody>
 </table>

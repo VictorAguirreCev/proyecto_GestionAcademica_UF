@@ -1,33 +1,23 @@
 from flask import Flask, render_template, request, redirect
-import os
-
-from form import ValidadorFormulario
-from inventario.bd import db
-from inventario.productos import Tramite
-from inventario.inventario import guardar_en_archivos, leer_archivos
+from Conexion.conexion import obtener_conexion
 
 app = Flask(__name__)
-
-CARPETA_RAIZ = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(CARPETA_RAIZ, 'universidad.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db.init_app(app)
-
-with app.app_context():
-    db.create_all()
 
 @app.route('/')
 def inicio():
     return render_template('index.html')
 
-@app.route('/contactos')
-def contactos():
-    return render_template('contactos.html')
+# ==========================================
+# CRUD: TABLA TRÁMITES
+# ==========================================
 
 @app.route('/productos')
 def productos():
-    lista = Tramite.query.all()
+    conexion = obtener_conexion()
+    cursor = conexion.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM tramites")
+    lista = cursor.fetchall()
+    conexion.close()
     return render_template('productos.html', tramites=lista)
 
 @app.route('/producto_form')
@@ -40,20 +30,85 @@ def guardar():
     estudiante = request.form['estudiante']
     tipo = request.form['tipo']
     costo = request.form['costo']
-
-    if ValidadorFormulario.validar_tramite(estudiante, tipo, costo):
-        nuevo_registro = Tramite(estudiante, tipo, float(costo))
-        db.session.add(nuevo_registro)
-        db.session.commit()
-
-        guardar_en_archivos(estudiante, tipo, float(costo))
-
+    
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("INSERT INTO tramites (estudiante, tipo, costo) VALUES (%s, %s, %s)", (estudiante, tipo, costo))
+    conexion.commit()
+    conexion.close()
     return redirect('/productos')
 
-@app.route('/datos')
-def datos():
-    txt, json_data, csv_data = leer_archivos()
-    return render_template('datos.html', txt=txt, json=json_data, csv=csv_data)
+@app.route('/modificar_tramite', methods=['POST'])
+def modificar_tramite():
+    id_tramite = request.form['id']
+    estudiante = request.form['estudiante']
+    tipo = request.form['tipo']
+    costo = request.form['costo']
+    
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("UPDATE tramites SET estudiante=%s, tipo=%s, costo=%s WHERE id=%s", (estudiante, tipo, costo, id_tramite))
+    conexion.commit()
+    conexion.close()
+    return redirect('/productos')
+
+@app.route('/eliminar_tramite/<int:id>')
+def eliminar_tramite(id):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("DELETE FROM tramites WHERE id = %s", (id,))
+    conexion.commit()
+    conexion.close()
+    return redirect('/productos')
+
+# ==========================================
+# CRUD: TABLA USUARIOS (Administrativos)
+# ==========================================
+
+@app.route('/usuarios')
+def usuarios():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM usuarios")
+    lista_usuarios = cursor.fetchall()
+    conexion.close()
+    return render_template('usuarios.html', usuarios=lista_usuarios)
+
+@app.route('/guardar_usuario', methods=['POST'])
+def guardar_usuario():
+    nombre = request.form['nombre']
+    mail = request.form['mail']
+    password = request.form['password']
+    
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("INSERT INTO usuarios (nombre, mail, password) VALUES (%s, %s, %s)", (nombre, mail, password))
+    conexion.commit()
+    conexion.close()
+    return redirect('/usuarios')
+
+@app.route('/modificar_usuario', methods=['POST'])
+def modificar_usuario():
+    id_usuario = request.form['id_usuario']
+    nombre = request.form['nombre']
+    mail = request.form['mail']
+    password = request.form['password']
+    
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("UPDATE usuarios SET nombre=%s, mail=%s, password=%s WHERE id_usuario=%s", (nombre, mail, password, id_usuario))
+    conexion.commit()
+    conexion.close()
+    return redirect('/usuarios')
+
+@app.route('/eliminar_usuario/<int:id>')
+def eliminar_usuario(id):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("DELETE FROM usuarios WHERE id_usuario = %s", (id,))
+    conexion.commit()
+    conexion.close()
+    return redirect('/usuarios')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

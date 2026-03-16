@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white"><h5 class="mb-0">Nuevo Administrativo</h5></div>
+            <div class="card-body">
+                <form action="/guardar_usuario" method="POST">
+                    <input type="text" name="nombre" class="form-control mb-2" placeholder="Nombre completo" required>
+                    <input type="email" name="mail" class="form-control mb-2" placeholder="Correo electrónico" required>
+                    <input type="text" name="password" class="form-control mb-3" placeholder="Contraseña" required>
+                    <button type="submit" class="btn btn-primary w-100">Registrar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-9">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-secondary text-white"><h5 class="mb-0">Gestión de Usuarios (MySQL)</h5></div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr><th>ID</th><th>Datos y Edición</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %}
+                        <tr>
+                            <td class="align-middle fw-bold">{{ u.id_usuario }}</td>
+                            <td>
+                                <form action="/modificar_usuario" method="POST" class="d-inline">
+                                    <input type="hidden" name="id_usuario" value="{{ u.id_usuario }}">
+                                    <input type="text" name="nombre" value="{{ u.nombre }}" class="form-control form-control-sm d-inline w-auto" required>
+                                    <input type="email" name="mail" value="{{ u.mail }}" class="form-control form-control-sm d-inline w-auto" required>
+                                    <input type="text" name="password" value="{{ u.password }}" class="form-control form-control-sm d-inline w-auto" required>
+                                    <button type="submit" class="btn btn-warning btn-sm">Actualizar</button>
+                                </form>
+                                <a href="/eliminar_usuario/{{ u.id_usuario }}" class="btn btn-danger btn-sm">Eliminar</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="2" class="text-center">No hay personal registrado.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
