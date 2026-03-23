@@ -6,14 +6,13 @@ def obtener_conexion():
             host='mysql-2d119ddc-uea-b69e.g.aivencloud.com',
             user='avnadmin',
             password='AVNS_XYJcQrtNUafY8HxHB-3',
-            port=23611,
+            port=int(23611),        # Forzamos matemáticamente el número
             database='defaultdb',
             ssl_disabled=False,
             ssl_verify_identity=False,
-            connect_timeout=10
+            use_pure=True           # SOLUCIÓN: Evita el colapso en Render
         )
         return conexion
     except Exception as e:
-        # Esto imprimirá el error exacto en la consola de Render
         print(f"🚨 ERROR CRÍTICO DE BASE DE DATOS: {e}")
         return None
