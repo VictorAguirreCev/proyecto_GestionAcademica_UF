@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-5">
+        <div class="card shadow border-0">
+            <div class="card-header bg-dark text-white text-center py-3">
+                <h4 class="mb-0">Alta en el Sistema de Gestión</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="/registro" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre Completo:</label>
+                        <input type="text" name="nombre" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Correo Asignado:</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Crear Contraseña:</label>
+                        <input type="password" name="password" class="form-control" required>
+                        <div class="form-text">La contraseña se encriptará en la base de datos central.</div>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 fw-bold">Crear Credenciales</button>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="/login" class="text-decoration-none">Ya tengo cuenta. Volver al inicio.</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

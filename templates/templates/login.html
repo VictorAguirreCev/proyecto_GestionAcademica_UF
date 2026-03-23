@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card shadow border-0">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h4 class="mb-0">Portal de Personal Administrativo</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="/login" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Correo Institucional:</label>
+                        <input type="email" name="email" class="form-control" placeholder="ejemplo@universitario.edu.ec" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Contraseña de Acceso:</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">Iniciar Sesión Segura</button>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="/registro" class="text-decoration-none">¿Nuevo colaborador? Solicitar registro</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
