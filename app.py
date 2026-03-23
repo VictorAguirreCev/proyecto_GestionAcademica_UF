@@ -5,14 +5,12 @@ from Conexion.conexion import obtener_conexion
 from models import Usuario
 
 app = Flask(__name__)
-app.secret_key = 'clave_secreta_universitario_2026'  # Necesario para manejar sesiones seguras
+app.secret_key = 'clave_secreta_universitario_2026'
 
-# Configuración de Flask-Login
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'  # Si alguien sin sesión intenta entrar, lo manda aquí
-login_manager.login_message = "Por favor, inicie sesión en el portal de admisiones para acceder."
+login_manager.login_view = 'login'
+login_manager.login_message = "Por favor, inicie sesión para acceder al sistema."
 
-# Cargar usuario desde la base de datos (Exigido por la rúbrica)
 @login_manager.user_loader
 def load_user(user_id):
     conexion = obtener_conexion()
@@ -26,7 +24,7 @@ def load_user(user_id):
     return None
 
 # ==========================================
-# RUTAS DE AUTENTICACIÓN (LOGIN Y REGISTRO)
+# RUTAS DE AUTENTICACIÓN
 # ==========================================
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -44,7 +42,6 @@ def login():
         usuario_db = cursor.fetchone()
         conexion.close()
         
-        # Verificamos si existe y si la contraseña encriptada coincide
         if usuario_db and check_password_hash(usuario_db['password'], password_ingresada):
             usuario_obj = Usuario(usuario_db['id_usuario'], usuario_db['nombre'], usuario_db['email'], usuario_db['password'])
             login_user(usuario_obj)
@@ -63,8 +60,6 @@ def registro():
         nombre = request.form['nombre']
         email = request.form['email']
         password_plana = request.form['password']
-        
-        # Encriptamos la contraseña por seguridad
         password_encriptada = generate_password_hash(password_plana)
         
         conexion = obtener_conexion()
