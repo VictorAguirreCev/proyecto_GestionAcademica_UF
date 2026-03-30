@@ -1,19 +1,16 @@
-import mysql.connector
+import pymysql
 
 def obtener_conexion():
     try:
-        conexion = mysql.connector.connect(
+        conexion = pymysql.connect(
             host='mysql-2d119ddc-uea-b69e.g.aivencloud.com',
             user='avnadmin',
             password='AVNS_XYJcQrtNUafY8HxHB-3',
-            port=int(23611),
-            database='defaultdb',
-            ssl_disabled=False,
-            ssl_verify_identity=False,
-            use_pure=True
+            port=23611,
+            database='defaultdb'
         )
         
-        # LA SOLUCIÓN PARA AIVEN: Ajustar el nivel de seguridad de la transacción
+        # Ajuste estricto para que Aiven permita registrar usuarios sin fallar
         cursor = conexion.cursor()
         cursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ")
         cursor.close()

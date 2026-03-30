@@ -3,6 +3,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from werkzeug.security import generate_password_hash, check_password_hash
 from Conexion.conexion import obtener_conexion
 from models import Usuario
+import pymysql.cursors
 
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_universitario_2026'
@@ -14,7 +15,9 @@ login_manager.login_message = "Por favor, inicie sesión para acceder al sistema
 @login_manager.user_loader
 def load_user(user_id):
     conexion = obtener_conexion()
-    cursor = conexion.cursor(dictionary=True)
+    if conexion is None: return None
+    
+    cursor = conexion.cursor(pymysql.cursors.DictCursor)
     cursor.execute("SELECT * FROM usuarios WHERE id_usuario = %s", (user_id,))
     usuario_data = cursor.fetchone()
     conexion.close()
@@ -37,7 +40,11 @@ def login():
         password_ingresada = request.form['password']
         
         conexion = obtener_conexion()
-        cursor = conexion.cursor(dictionary=True)
+        if conexion is None:
+            flash("Error de conexión al servidor.")
+            return render_template('login.html')
+            
+        cursor = conexion.cursor(pymysql.cursors.DictCursor)
         cursor.execute("SELECT * FROM usuarios WHERE email = %s", (email,))
         usuario_db = cursor.fetchone()
         conexion.close()
@@ -63,6 +70,10 @@ def registro():
         password_encriptada = generate_password_hash(password_plana)
         
         conexion = obtener_conexion()
+        if conexion is None:
+            flash("Error de conexión al servidor.")
+            return render_template('registro.html')
+            
         cursor = conexion.cursor()
         try:
             cursor.execute("INSERT INTO usuarios (nombre, email, password) VALUES (%s, %s, %s)", 
@@ -71,6 +82,7 @@ def registro():
             flash("Usuario registrado exitosamente. Ahora puede iniciar sesión.")
             return redirect(url_for('login'))
         except Exception as e:
+            print(f"🚨 ERROR REAL DE LA BASE DE DATOS: {e}")
             flash("Error: El correo ingresado ya existe en el sistema.")
         finally:
             conexion.close()
@@ -96,7 +108,9 @@ def inicio():
 @login_required
 def productos():
     conexion = obtener_conexion()
-    cursor = conexion.cursor(dictionary=True)
+    if conexion is None:
+        return "Error de base de datos", 500
+    cursor = conexion.cursor(pymysql.cursors.DictCursor)
     cursor.execute("SELECT * FROM tramites")
     lista = cursor.fetchall()
     conexion.close()
@@ -116,6 +130,8 @@ def guardar():
     costo = request.form['costo']
     
     conexion = obtener_conexion()
+    if conexion is None:
+        return "Error de base de datos", 500
     cursor = conexion.cursor()
     cursor.execute("INSERT INTO tramites (estudiante, tipo, costo) VALUES (%s, %s, %s)", (estudiante, tipo, costo))
     conexion.commit()
@@ -126,6 +142,8 @@ def guardar():
 @login_required
 def eliminar_tramite(id):
     conexion = obtener_conexion()
+    if conexion is None:
+        return "Error de base de datos", 500
     cursor = conexion.cursor()
     cursor.execute("DELETE FROM tramites WHERE id = %s", (id,))
     conexion.commit()
